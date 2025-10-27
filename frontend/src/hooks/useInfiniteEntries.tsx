@@ -23,10 +23,9 @@ export default function useInfiniteEntries(limit = 20) {
   }, [page, limit, hasMore, entries.length]);
 
   useEffect(() => {
-    // initial load
     loadMore();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { entries, loadMore, hasMore, setEntries };
+  return { entries, setEntries, loadMore, hasMore };
 }
