@@ -1,13 +1,24 @@
 // frontend/src/components/EntriesTable.tsx
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback } from 'react';
 import useInfiniteEntries from '../hooks/useInfiniteEntries';
 import EntryRow from './EntryRow';
-import EntryForm, { EntryShape } from './EntryForm';
+import EntryForm from './EntryForm';
 
-export default function EntriesTable() {
-  // useInfiniteEntries returns setEntries so we can update state in-place
+type Props = {
+  adding: boolean;
+  setAdding: (v: boolean) => void;
+};
+
+export default function EntriesTable({ adding, setAdding }: Props) {
   const { entries, loadMore, hasMore, setEntries } = useInfiniteEntries(20);
-  const [adding, setAdding] = useState(false);
+
+  // debug print so we can verify the prop flows
+  console.log(
+    'EntriesTable mounted. props.adding=',
+    adding,
+    'entries.length=',
+    entries.length
+  );
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastRef = useCallback(
@@ -35,21 +46,11 @@ export default function EntriesTable() {
   };
 
   const handleAdded = (created: any) => {
-    // put newly created entry at the start
     setEntries((prev: any[]) => [created, ...prev]);
   };
 
   return (
-    <div className="bg-white rounded shadow overflow-hidden">
-      <div className="p-4 flex justify-end">
-        <button
-          onClick={() => setAdding(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-        >
-          + Add New
-        </button>
-      </div>
-
+    <div className="bg-white rounded shadow">
       <div className="table-scroll">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-100 sticky top-0">
@@ -81,10 +82,11 @@ export default function EntriesTable() {
         </div>
       </div>
 
+      {/* modal rendered based on prop from App */}
       {adding && (
         <EntryForm
           onClose={() => setAdding(false)}
-          onSaved={(created) => {
+          onSaved={(created: any) => {
             setAdding(false);
             handleAdded(created);
           }}

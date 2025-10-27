@@ -1,7 +1,8 @@
 // frontend/src/components/EntryRow.tsx
 import React, { useState } from 'react';
 import { deleteEntry } from '../lib/api';
-import EntryForm, { EntryShape } from './EntryForm';
+import EntryForm from './EntryForm';
+import type { EntryShape } from './EntryForm';
 
 export default function EntryRow({
   entry,
