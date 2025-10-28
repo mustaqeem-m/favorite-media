@@ -1,8 +1,6 @@
-// frontend/src/components/EntryRow.tsx
 import React, { useState } from 'react';
 import { deleteEntry } from '../lib/api';
-import EntryForm from './EntryForm';
-import type { EntryShape } from './EntryForm';
+import EntryForm, { EntryShape } from './EntryForm';
 
 export default function EntryRow({
   entry,
@@ -28,24 +26,24 @@ export default function EntryRow({
 
   return (
     <>
-      <tr className="border-t">
-        <td className="p-3">{entry.title}</td>
-        <td className="p-3">{entry.type}</td>
-        <td className="p-3">{entry.director}</td>
-        <td className="p-3">{entry.budget}</td>
-        <td className="p-3">{entry.location}</td>
-        <td className="p-3">{entry.duration}</td>
-        <td className="p-3">{entry.year}</td>
-        <td className="p-3">
+      <tr className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+        <td className="px-4 py-3 text-gray-900 font-medium">{entry.title}</td>
+        <td className="px-4 py-3 text-gray-700">{entry.type}</td>
+        <td className="px-4 py-3 text-gray-700">{entry.director}</td>
+        <td className="px-4 py-3 text-gray-700">{entry.budget}</td>
+        <td className="px-4 py-3 text-gray-700">{entry.location}</td>
+        <td className="px-4 py-3 text-gray-700">{entry.duration}</td>
+        <td className="px-4 py-3 text-gray-700">{entry.year}</td>
+        <td className="px-4 py-3 flex items-center gap-2">
           <button
             onClick={() => setEditing(true)}
-            className="mr-2 px-2 py-1 bg-yellow-300 rounded"
+            className="inline-flex items-center rounded-md bg-yellow-100 px-3 py-1 text-sm font-medium text-yellow-800 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1"
           >
             Edit
           </button>
           <button
             onClick={onDelete}
-            className="px-2 py-1 bg-red-400 text-white rounded"
+            className="inline-flex items-center rounded-md bg-red-500 px-3 py-1 text-sm font-medium text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1"
           >
             Delete
           </button>

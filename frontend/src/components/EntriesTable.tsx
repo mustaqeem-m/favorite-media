@@ -50,21 +50,39 @@ export default function EntriesTable({ adding, setAdding }: Props) {
   };
 
   return (
-    <div className="bg-white rounded shadow">
-      <div className="table-scroll">
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-100 sticky top-0">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+      {/* Table scroll area */}
+      <div className="overflow-auto">
+        <table className="min-w-full table-fixed text-sm">
+          <thead className="bg-gray-50 sticky top-0 z-10">
             <tr>
-              <th className="p-3 text-left">Title</th>
-              <th className="p-3 text-left">Type</th>
-              <th className="p-3 text-left">Director</th>
-              <th className="p-3 text-left">Budget</th>
-              <th className="p-3 text-left">Location</th>
-              <th className="p-3 text-left">Duration</th>
-              <th className="p-3 text-left">Year/Time</th>
-              <th className="p-3 text-left">Actions</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                Title
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                Type
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                Director
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                Budget
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                Location
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                Duration
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                Year/Time
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                Actions
+              </th>
             </tr>
           </thead>
+
           <tbody>
             {entries.map((e: any) => (
               <EntryRow
@@ -77,7 +95,11 @@ export default function EntriesTable({ adding, setAdding }: Props) {
           </tbody>
         </table>
 
-        <div ref={lastRef as any} className="p-4 text-center">
+        {/* sentinel for infinite scroll */}
+        <div
+          ref={lastRef as any}
+          className="p-4 text-center text-sm text-gray-500"
+        >
           {hasMore ? 'Loading more...' : 'No more entries'}
         </div>
       </div>

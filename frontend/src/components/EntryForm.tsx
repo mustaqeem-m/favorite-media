@@ -135,15 +135,7 @@ export default function EntryForm({ initial, onClose, onSaved }: Props) {
     >
       <form
         onSubmit={handleSubmit(onSubmit)}
-        style={{
-          width: 'min(900px, 96%)',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          background: 'white',
-          padding: '1.25rem',
-          borderRadius: '12px',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-        }}
+        className="w-full max-w-2xl bg-white rounded-lg shadow-xl border border-gray-200 p-6 overflow-y-auto max-h-[90vh] space-y-6"
       >
         <h2
           style={{
