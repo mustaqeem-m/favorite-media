@@ -1,7 +1,39 @@
 // frontend/src/components/EntryForm.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { createEntry, updateEntry } from '../lib/api';
+
+/* Zod schema (keeps frontend validation in-sync with backend) */
+const dataUrlRegex = /^data:[\w+-]+\/[\w+.-]+;base64,[A-Za-z0-9+/]+=*$/;
+
+const entrySchema = z.object({
+  title: z.string().min(1, { message: 'Title is required' }),
+  type: z.enum(['Movie', 'TV Show'], {
+    required_error: 'Select Movie or TV Show',
+  }),
+  director: z.string().optional(),
+  budget: z.string().optional(),
+  location: z.string().optional(),
+  duration: z.string().optional(),
+  year: z.string().optional(),
+  notes: z.string().optional(),
+  posterUrl: z
+    .string()
+    .optional()
+    .refine(
+      (v) =>
+        v === undefined ||
+        v === '' ||
+        /^https?:\/\//.test(v) ||
+        dataUrlRegex.test(v),
+      { message: 'Poster must be an http(s) URL or a valid data URI' }
+    ),
+});
+
+export type EntryFormType = z.infer<typeof entrySchema>;
 
 export type EntryShape = {
   id?: number;
@@ -17,14 +49,20 @@ export type EntryShape = {
 };
 
 type Props = {
-  initial?: EntryShape;
+  initial?: Partial<EntryFormType> & { id?: number };
   onClose?: () => void;
   onSaved?: (entry: any) => void;
 };
 
 export default function EntryForm({ initial, onClose, onSaved }: Props) {
-  const [form, setForm] = useState<EntryShape>(
-    initial ?? {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<EntryFormType>({
+    resolver: zodResolver(entrySchema),
+    defaultValues: {
       title: '',
       type: 'Movie',
       director: '',
@@ -34,14 +72,24 @@ export default function EntryForm({ initial, onClose, onSaved }: Props) {
       year: '',
       notes: '',
       posterUrl: '',
-    }
-  );
-  const [loading, setLoading] = useState(false);
-  const isEdit = Boolean(initial && initial.id);
+      ...(initial ?? {}),
+    },
+  });
 
   useEffect(() => {
-    if (initial) setForm(initial);
-  }, [initial]);
+    // reset when initial changes (useful for Edit)
+    reset({
+      title: initial?.title ?? '',
+      type: (initial?.type as any) ?? 'Movie',
+      director: initial?.director ?? '',
+      budget: initial?.budget ?? '',
+      location: initial?.location ?? '',
+      duration: initial?.duration ?? '',
+      year: initial?.year ?? '',
+      notes: initial?.notes ?? '',
+      posterUrl: initial?.posterUrl ?? '',
+    });
+  }, [initial, reset]);
 
   // close on ESC
   useEffect(() => {
@@ -52,31 +100,27 @@ export default function EntryForm({ initial, onClose, onSaved }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const onSubmit = async (data: EntryFormType) => {
     try {
-      if (isEdit && initial && initial.id) {
-        const updated = await updateEntry(initial.id, form);
-        if (onSaved) onSaved(updated);
+      if (initial && (initial as any).id) {
+        const updated = await updateEntry((initial as any).id, data);
+        onSaved && onSaved(updated);
       } else {
-        const created = await createEntry(form);
-        if (onSaved) onSaved(created);
+        const created = await createEntry(data);
+        onSaved && onSaved(created);
       }
-      if (onClose) onClose();
+      onClose && onClose();
     } catch (err: any) {
       console.error('SAVE ERROR', err, err?.response);
       const server = err?.response ? JSON.stringify(err.response) : null;
       const msg = server ?? err?.message ?? 'Unknown error';
       alert('Save failed: ' + msg);
-    } finally {
-      setLoading(false);
     }
   };
 
   const modal = (
     <div
-      // Inline styles to force full-screen overlay and top z-index
+      // inline styles ensure overlay always visible and above everything
       style={{
         position: 'fixed',
         inset: '0px',
@@ -84,13 +128,13 @@ export default function EntryForm({ initial, onClose, onSaved }: Props) {
         alignItems: 'center',
         justifyContent: 'center',
         background: 'rgba(0,0,0,0.5)',
-        zIndex: 2147483647, // ridiculously high to beat anything
+        zIndex: 2147483647,
       }}
       role="dialog"
       aria-modal="true"
     >
       <form
-        onSubmit={submit}
+        onSubmit={handleSubmit(onSubmit)}
         style={{
           width: 'min(900px, 96%)',
           maxHeight: '90vh',
@@ -108,7 +152,7 @@ export default function EntryForm({ initial, onClose, onSaved }: Props) {
             marginBottom: '0.75rem',
           }}
         >
-          {isEdit ? 'Edit Entry' : 'Add Entry'}
+          {initial && (initial as any).id ? 'Edit Entry' : 'Add Entry'}
         </h2>
 
         <div
@@ -118,70 +162,139 @@ export default function EntryForm({ initial, onClose, onSaved }: Props) {
             gap: 12,
           }}
         >
-          <input
-            required
-            placeholder="Title"
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}
-          />
+          <div style={{ gridColumn: '1 / -1' }}>
+            <input
+              {...register('title')}
+              placeholder="Title"
+              style={{
+                width: '100%',
+                padding: 8,
+                border: '1px solid #ddd',
+                borderRadius: 6,
+              }}
+            />
+            {errors.title && (
+              <p style={{ color: 'red', marginTop: 6 }}>
+                {errors.title.message}
+              </p>
+            )}
+          </div>
 
-          <select
-            value={form.type}
-            onChange={(e) => setForm({ ...form, type: e.target.value as any })}
-            style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}
-          >
-            <option>Movie</option>
-            <option>TV Show</option>
-          </select>
+          <div>
+            <select
+              {...register('type')}
+              style={{
+                width: '100%',
+                padding: 8,
+                border: '1px solid #ddd',
+                borderRadius: 6,
+              }}
+            >
+              <option>Movie</option>
+              <option>TV Show</option>
+            </select>
+            {errors.type && (
+              <p style={{ color: 'red', marginTop: 6 }}>
+                {errors.type.message}
+              </p>
+            )}
+          </div>
 
-          <input
-            placeholder="Director"
-            value={form.director}
-            onChange={(e) => setForm({ ...form, director: e.target.value })}
-            style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}
-          />
-          <input
-            placeholder="Budget"
-            value={form.budget}
-            onChange={(e) => setForm({ ...form, budget: e.target.value })}
-            style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}
-          />
-          <input
-            placeholder="Location"
-            value={form.location}
-            onChange={(e) => setForm({ ...form, location: e.target.value })}
-            style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}
-          />
-          <input
-            placeholder="Duration"
-            value={form.duration}
-            onChange={(e) => setForm({ ...form, duration: e.target.value })}
-            style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}
-          />
-          <input
-            placeholder="Year/Time"
-            value={form.year}
-            onChange={(e) => setForm({ ...form, year: e.target.value })}
-            style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}
-          />
-          <input
-            placeholder="Poster URL"
-            value={form.posterUrl}
-            onChange={(e) => setForm({ ...form, posterUrl: e.target.value })}
-            style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}
-          />
-          <textarea
-            placeholder="Notes"
-            value={form.notes}
-            onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            style={{
-              padding: 8,
-              border: '1px solid #ddd',
-              borderRadius: 6,
-              gridColumn: '1 / -1',
-            }}
-          />
+          <div>
+            <input
+              {...register('director')}
+              placeholder="Director"
+              style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}
+            />
+            {errors.director && (
+              <p style={{ color: 'red', marginTop: 6 }}>
+                {errors.director.message}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <input
+              {...register('budget')}
+              placeholder="Budget"
+              style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}
+            />
+            {errors.budget && (
+              <p style={{ color: 'red', marginTop: 6 }}>
+                {errors.budget.message}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <input
+              {...register('location')}
+              placeholder="Location"
+              style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}
+            />
+            {errors.location && (
+              <p style={{ color: 'red', marginTop: 6 }}>
+                {errors.location.message}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <input
+              {...register('duration')}
+              placeholder="Duration"
+              style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}
+            />
+            {errors.duration && (
+              <p style={{ color: 'red', marginTop: 6 }}>
+                {errors.duration.message}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <input
+              {...register('year')}
+              placeholder="Year/Time"
+              style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}
+            />
+            {errors.year && (
+              <p style={{ color: 'red', marginTop: 6 }}>
+                {errors.year.message}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <input
+              {...register('posterUrl')}
+              placeholder="Poster URL (http(s) or data URI)"
+              style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}
+            />
+            {errors.posterUrl && (
+              <p style={{ color: 'red', marginTop: 6 }}>
+                {errors.posterUrl.message}
+              </p>
+            )}
+          </div>
+
+          <div style={{ gridColumn: '1 / -1' }}>
+            <textarea
+              {...register('notes')}
+              placeholder="Notes"
+              style={{
+                padding: 8,
+                border: '1px solid #ddd',
+                borderRadius: 6,
+                width: '100%',
+              }}
+            />
+            {errors.notes && (
+              <p style={{ color: 'red', marginTop: 6 }}>
+                {errors.notes.message}
+              </p>
+            )}
+          </div>
         </div>
 
         <div
@@ -201,7 +314,7 @@ export default function EntryForm({ initial, onClose, onSaved }: Props) {
           </button>
           <button
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting}
             style={{
               padding: '6px 12px',
               borderRadius: 6,
@@ -210,7 +323,7 @@ export default function EntryForm({ initial, onClose, onSaved }: Props) {
               border: 'none',
             }}
           >
-            {loading ? 'Saving...' : 'Save'}
+            {isSubmitting ? 'Saving...' : 'Save'}
           </button>
         </div>
       </form>
