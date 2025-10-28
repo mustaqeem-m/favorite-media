@@ -23,6 +23,7 @@ export default function EntryRow({
       alert('Delete failed');
     }
   };
+  const posterExists = Boolean(entry.posterUrl);
 
   return (
     <>
@@ -34,6 +35,28 @@ export default function EntryRow({
         <td className="px-4 py-3 text-gray-700">{entry.location}</td>
         <td className="px-4 py-3 text-gray-700">{entry.duration}</td>
         <td className="px-4 py-3 text-gray-700">{entry.year}</td>
+
+        {/* Poster column */}
+        <td className="px-4 py-3">
+          {posterExists ? (
+            <img
+              src={entry.posterUrl}
+              alt={entry.title}
+              className="w-12 h-16 rounded-md object-cover border border-gray-200"
+            />
+          ) : (
+            // simple placeholder: circle with initials
+            <div className="w-12 h-12 rounded-md bg-gray-100 flex items-center justify-center text-sm text-gray-600 border border-gray-200">
+              {(entry.title || '')
+                .split(' ')
+                .slice(0, 2)
+                .map((s) => s[0])
+                .join('')
+                .toUpperCase() || '??'}
+            </div>
+          )}
+        </td>
+
         <td className="px-4 py-3 flex items-center gap-2">
           <button
             onClick={() => setEditing(true)}
