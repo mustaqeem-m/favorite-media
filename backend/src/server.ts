@@ -1,14 +1,22 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import authRoutes from './routes/auth';
 import entriesRouter from './routes/entries';
+import rateLimit from 'express-rate-limit';
 
 const app = express();
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
-
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { error: 'Too many requests' },
+});
 // Routes
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/entries', entriesRouter);
 
 app.get('/health', (req, res) => {
