@@ -6,6 +6,8 @@ import { Button } from '../components/ui/button';
 import { useAuth } from '../hooks/useAuth';
 import { toast } from 'react-hot-toast';
 
+const BASE_URL = import.meta.env.VITE_API_URL || '';
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,7 +17,7 @@ export default function Login() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(`${BASE_URL}/api/auth/login`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
