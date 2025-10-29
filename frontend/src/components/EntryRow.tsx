@@ -7,8 +7,8 @@ export default function EntryRow({
   onUpdated,
   onDeleted,
 }: {
-  entry: any;
-  onUpdated: (e: any) => void;
+  entry: EntryShape;
+  onUpdated: (e: EntryShape) => void;
   onDeleted: (id: number) => void;
 }) {
   const [editing, setEditing] = useState(false);
@@ -16,8 +16,8 @@ export default function EntryRow({
   const onDelete = async () => {
     if (!confirm('Delete this entry?')) return;
     try {
-      await deleteEntry(entry.id);
-      onDeleted(entry.id);
+      await deleteEntry(entry.id!);
+      onDeleted(entry.id!);
     } catch (err) {
       console.error(err);
       alert('Delete failed');
@@ -50,7 +50,7 @@ export default function EntryRow({
               {(entry.title || '')
                 .split(' ')
                 .slice(0, 2)
-                .map((s) => s[0])
+                .map((s: string) => s[0])
                 .join('')
                 .toUpperCase() || '??'}
             </div>

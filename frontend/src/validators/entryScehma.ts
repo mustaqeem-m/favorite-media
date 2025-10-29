@@ -5,7 +5,7 @@ const dataUrlRegex = /^data:[\w+-]+\/[\w+.-]+;base64,[A-Za-z0-9+/]+=*$/;
 export const entrySchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
   type: z.enum(['Movie', 'TV Show'], {
-    required_error: 'Select Movie or TV Show',
+    message: 'Select Movie or TV Show',
   }),
   director: z.string().optional(),
   budget: z.string().optional(),
