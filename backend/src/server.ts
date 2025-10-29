@@ -8,7 +8,12 @@ import rateLimit from 'express-rate-limit';
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: 'https://favorite-media-beta.vercel.app',
+    credentials: true,
+  })
+);
 app.use(express.json());
 const authLimiter = rateLimit({
   windowMs: 60 * 1000,
