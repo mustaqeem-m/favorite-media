@@ -7,7 +7,11 @@ import rateLimit from 'express-rate-limit';
 
 const app = express();
 
+// Trust the first proxy
+app.set('trust proxy', 1);
+
 // Middlewares
+app.use(cookieParser());
 app.use(
   cors({
     origin: 'https://favorite-media-beta.vercel.app',
