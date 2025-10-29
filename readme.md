@@ -2,6 +2,12 @@
 
 A full-stack web application to track your favorite movies and TV shows. Built with a React frontend and a Node.js/Express backend.
 
+## Live Demo
+
+The production version of this application is deployed on Vercel:
+
+**[https://favorite-media-beta.vercel.app/](https://favorite-media-beta.vercel.app/)**
+
 ## Tech Stack
 
 - **Frontend:** React, Vite, TypeScript, Tailwind CSS
