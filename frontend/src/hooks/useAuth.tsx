@@ -1,6 +1,8 @@
 // frontend/src/hooks/useAuth.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
+const BASE_URL = import.meta.env.VITE_API_URL || '';
+
 type User = { id: number; email: string; name?: string } | null;
 const AuthContext = createContext<any>(null);
 
@@ -12,7 +14,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // attempt to refresh session (will set cookie) and optionally fetch user info
     (async () => {
       try {
-        const res = await fetch('/api/auth/refresh', {
+        const res = await fetch(`${BASE_URL}/api/auth/refresh`, {
           method: 'POST',
           credentials: 'include',
         });
@@ -31,10 +33,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    await fetch(`${BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
     setUser(null);
   };
-
   return (
     <AuthContext.Provider value={{ user, setUser, logout, loading }}>
       {children}
