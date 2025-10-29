@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { CookieOptions } from 'express';
 import { PrismaClient } from '@prisma/client';
 import {
   hashPassword,
@@ -13,7 +13,7 @@ const router = express.Router();
 
 const ACCESS_COOKIE = 'app_access';
 const REFRESH_COOKIE = 'app_refresh';
-const COOKIE_OPTIONS = {
+const COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   sameSite: 'lax',
   secure: process.env.NODE_ENV === 'production',
